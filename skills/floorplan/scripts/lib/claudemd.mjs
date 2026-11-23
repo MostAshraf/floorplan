@@ -1,18 +1,24 @@
-// Keeps a short block in the project's CLAUDE.local.md pointing future Claude Code sessions at the map, so
-// "where is X / how does Y work" starts from the map instead of a fresh search of the code.
-// CLAUDE.local.md is Claude Code's personal, uncommitted project memory (loaded at launch like CLAUDE.md,
-// including from parent folders); the map itself isn't committed, so its pointer isn't either. The file
-// is added to the repo's local ignore list (.git/info/exclude), which leaves tracked files untouched.
-// The block sits between markers and is rewritten in place; the rest of the file is never touched.
-// It's added only when the user asks for it (build.mjs --claude-md); a block that's already there is
-// kept current. Put <!-- floorplan:off --> in CLAUDE.local.md to opt out.
+// Keeps a short block in the running agent's personal, uncommitted project notes pointing future sessions
+// at the map, so "where is X / how does Y work" starts from the map instead of a fresh search of the code.
+// Claude Code's file is CLAUDE.local.md (loaded at launch like CLAUDE.md, including from parent folders);
+// Qwen Code's is .qwen/QWEN.local.md (loaded after the shared QWEN.md). The map itself isn't committed, so
+// its pointer isn't either: the file is added to the repo's local ignore list (.git/info/exclude), which
+// leaves tracked files untouched. The block sits between markers and is rewritten in place; the rest of the
+// file is never touched. It's added only when the user asks for it (build.mjs --claude-md / --qwen-md); a
+// block that's already there is kept current. Put <!-- floorplan:off --> in the file to opt out.
 import fs from 'node:fs';
 import path from 'node:path';
 import { git } from './common.mjs';
 
 const START = '<!-- floorplan:start -->';
 const END = '<!-- floorplan:end -->';
-const NAME = 'CLAUDE.local.md';
+// each agent's personal, uncommitted project notes, loaded at session start. A forward slash on purpose:
+// the name is pasted into .git/info/exclude verbatim, and gitignore reads a backslash as an escape, so
+// path.join here would write a pattern that never matches on Windows.
+const NOTES = {
+  claude: { file: 'CLAUDE.local.md' },
+  qwen: { file: '.qwen/QWEN.local.md' },
+};
 
 function block(rel) {
   return `${START}
@@ -37,34 +43,40 @@ const stripBlock = (text) => {
   return [text.slice(0, a).trimEnd(), text.slice(b + END.length).trimStart()].filter(Boolean).join('\n\n').replace(/\r\n/g, '\n');
 };
 
-/** Adds CLAUDE.local.md to the enclosing repo's .git/info/exclude unless git already ignores it. */
-function excludeLocally(root) {
+/** Adds the notes file to the enclosing repo's .git/info/exclude unless git already ignores it. */
+function excludeLocally(root, name) {
   if (git(root, ['rev-parse', '--is-inside-work-tree']) !== 'true') return 'not in a git repo';
-  if (git(root, ['ls-files', '--', NAME])) return `${NAME} is committed in this repo; the Floorplan section will show up in it`;
-  if (git(root, ['check-ignore', '-q', NAME]) !== null) return 'already ignored';
+  if (git(root, ['ls-files', '--', name])) return `${name} is committed in this repo; the Floorplan section will show up in it`;
+  if (git(root, ['check-ignore', '-q', name]) !== null) return 'already ignored';
   const prefix = git(root, ['rev-parse', '--show-prefix']) || '';
   const excl = git(root, ['rev-parse', '--git-path', 'info/exclude']);
   if (!excl) return 'could not find .git/info/exclude';
   const file = path.resolve(root, excl);
-  const line = '/' + prefix + NAME;
+  const line = '/' + prefix + name;
   const cur = read(file) || '';
   if (!cur.split(/\r?\n/).includes(line)) {
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, cur.replace(/\s*$/, cur.trim() ? '\n' : '') + `# personal Claude Code notes (added by Floorplan)\n${line}\n`);
+    fs.writeFileSync(file, cur.replace(/\s*$/, cur.trim() ? '\n' : '') + `# personal notes (added by Floorplan)\n${line}\n`);
   }
   return 'ignored locally via .git/info/exclude';
 }
 
-/** Refreshes the block, or adds it when `add` (the user asked for it); moves it out of a committed CLAUDE.md written by older versions. */
-export function writeClaudeMd(root, outDir, { add = false } = {}) {
+/** Refreshes the block, or adds it when `add` (the user asked for it); a Claude Code build also moves it out of a committed CLAUDE.md written by older versions. */
+export function writeClaudeMd(root, outDir, { add = false, agent = 'claude' } = {}) {
+  const kind = NOTES[agent];
+  if (!kind) return 'skipped (this agent has no personal notes file)';
   const rel = path.relative(root, outDir).replace(/\\/g, '/');
   if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return 'skipped (map is outside the codebase)';
-  const had = ['CLAUDE.local.md', 'CLAUDE.md', path.join('.claude', 'CLAUDE.md')].some((f) => stripBlock(read(path.join(root, f)) ?? '') != null);
-  if (!add && !had) return 'not added (offer it to the user; add it with --claude-md)';
+  // only this agent's own file says a block is already here; Claude also checks the two places older
+  // versions wrote it. Another agent's notes are left alone entirely.
+  const had = (agent === 'claude' ? [kind.file, 'CLAUDE.md', path.join('.claude', 'CLAUDE.md')] : [kind.file])
+    .some((f) => stripBlock(read(path.join(root, f)) ?? '') != null);
+  if (!add && !had) return `not added (offer it to the user; add it with --${agent}-md)`;
   const notes = [];
 
-  // older versions wrote the block into CLAUDE.md, which is usually committed: take it back out
-  for (const f of [path.join(root, 'CLAUDE.md'), path.join(root, '.claude', 'CLAUDE.md')]) {
+  // older versions wrote the block into CLAUDE.md, which is usually committed: take it back out.
+  // Only a Claude Code build touches Claude Code's files; another agent's build leaves them alone.
+  if (agent === 'claude') for (const f of [path.join(root, 'CLAUDE.md'), path.join(root, '.claude', 'CLAUDE.md')]) {
     const t = read(f);
     const rest = t == null ? null : stripBlock(t);
     if (rest == null) continue;
@@ -75,7 +87,7 @@ export function writeClaudeMd(root, outDir, { add = false } = {}) {
     notes.push(`moved the Floorplan section out of ${path.relative(root, f).replace(/\\/g, '/')}${!rest.trim() && tracked ? ' (now empty; delete it if you like)' : ''}`);
   }
 
-  const file = path.join(root, NAME);
+  const file = path.join(root, kind.file);
   const old = read(file);
   if (old?.includes('<!-- floorplan:off -->')) return 'skipped (opted out)';
   const eol = old?.includes('\r\n') ? '\r\n' : '\n';
@@ -86,8 +98,8 @@ export function writeClaudeMd(root, outDir, { add = false } = {}) {
     const a = old.indexOf(START), b = old.indexOf(END);
     next = a >= 0 && b > a ? old.slice(0, a) + text + old.slice(b + END.length) : old.replace(/\s*$/, '') + eol + eol + text + eol;
   }
-  if (next !== old) { fs.writeFileSync(file, next); notes.unshift(`${old == null ? 'created' : 'updated'} ${NAME}`); }
-  else notes.unshift(`${NAME} unchanged`);
-  notes.push(excludeLocally(root));
+  if (next !== old) { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, next); notes.unshift(`${old == null ? 'created' : 'updated'} ${kind.file}`); }
+  else notes.unshift(`${kind.file} unchanged`);
+  notes.push(excludeLocally(root, kind.file));
   return notes.join('; ');
 }

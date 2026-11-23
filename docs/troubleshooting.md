@@ -28,10 +28,10 @@ Codex runs commands in a sandbox, and the map's server needs to keep running and
 With Claude Code, update the map (`claude plugin update floorplan@floorplan`, then rebuild): questions now run without your MCP servers, whose tool descriptions were filling the context. With Codex, the MCP servers you set up for Codex still load, so turn off the ones you don't need (`enabled = false` under that server in `~/.codex/config.toml`).
 
 ### `node` isn't recognized
-Install [Node.js](https://nodejs.org) 18 or newer, then start a new session so Claude Code or Codex picks it up.
+Install [Node.js](https://nodejs.org) 18 or newer, then start a new session so Claude Code, Codex or Qwen Code picks it up.
 
-### Claude or Codex keeps asking to run `node` scripts
-In Claude Code, Floorplan pre-approves its own scripts while it's running, but it may still ask in some setups. Choose the option to always allow them for this project. Codex asks according to your approval settings; allowing Floorplan's `node` scripts for the project stops the prompts.
+### Claude, Codex or Qwen keeps asking to run `node` scripts
+In Claude Code, Floorplan pre-approves its own scripts while it's running, but it may still ask in some setups. Choose the option to always allow them for this project. Codex asks according to your approval settings; allowing Floorplan's `node` scripts for the project stops the prompts. In Qwen Code, allowing the script once (choosing "always allow" for this project or workspace) covers the rest of the session's builds.
 
 ### The skill doesn't show up
 Plugins load when a session starts, so start a new one after installing. Check that it's installed and enabled:
@@ -44,14 +44,16 @@ Plain requests like "make me a floorplan" work without the slash command. If you
 
 In Codex, check **Plugins** in the app, or run `codex plugin list`, and start a new chat after installing. To call it by name, type `$floorplan`.
 
+In Qwen Code, run `qwen extensions list` and start a new session after installing. The skill is listed as `floorplan:floorplan`.
+
 ### The map looks out of date
-Ask Claude or Codex to "update the floorplan". If a tab was already open, it reloads itself once the update finishes.
+Ask Claude, Codex or Qwen to "update the floorplan". If a tab was already open, it reloads itself once the update finishes.
 
 ### The map is blank, or stuck on "Laying out"
 Maps made before version 0.1.3 load their layout engine from the internet, so check your connection or any content blocker, or ask Claude to "update the floorplan". Newer maps have everything built in and work offline.
 
 ### The Ask bar has no Change switch
-**Change** appears only on a [blueprint](getting-started.md#plan-something-you-havent-built-yet), opened through its server (`node floorplan/serve.mjs`) with the Claude Code CLI or Codex available. A map of real code doesn't have it: ask Claude Code or Codex to change the code, then update the floorplan.
+**Change** appears only on a [blueprint](getting-started.md#plan-something-you-havent-built-yet), opened through its server (`node floorplan/serve.mjs`) with the Claude Code CLI or Codex available. A map of real code doesn't have it: ask Claude Code, Codex or Qwen Code to change the code, then update the floorplan.
 
 ### A change to a blueprint failed, or I don't like it
 If the updated plan doesn't pass Floorplan's checks after a second try, nothing is saved and the map stays as it was; try asking more specifically. If a change went through but isn't what you wanted, press **Undo** in its summary, or ask for another change. The previous versions are kept in `floorplan/.cache/history/`.
@@ -91,4 +93,4 @@ node floorplan/serve.mjs --stop
 It also stops by itself two hours after the last tab closes.
 
 ### Still stuck?
-[Open an issue](https://github.com/haydenschmitty/floorplan/issues/new/choose) with what you asked, what happened, whether you used Claude Code or Codex, and the output it showed. Please leave out anything private from your code.
+[Open an issue](https://github.com/haydenschmitty/floorplan/issues/new/choose) with what you asked, what happened, whether you used Claude Code, Codex or Qwen Code, and the output it showed. Please leave out anything private from your code.

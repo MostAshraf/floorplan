@@ -685,15 +685,19 @@ if (graph.screens?.length) report.push(`SCREENS  ${graph.screens.length} detecte
 report.push(graph.recent
   ? `RECENT WORK  ${graph.recent.items.length} card(s) highlighted across ${graph.recent.tasks.length} task(s)`
   : `RECENT WORK  none highlighted${fs.existsSync(recentFile) ? '' : ' (no recent-work.json)'}`);
-// point future Claude Code sessions in this project at the map. Codex has no personal, uncommitted
+// point future sessions in this project at the map, in the running agent's own personal notes file:
+// CLAUDE.local.md for Claude Code, .qwen/QWEN.local.md for Qwen Code. Codex has no personal, uncommitted
 // equivalent (AGENTS.md is shared with the team), so a map built by Codex leaves the project's notes alone,
 // and so does a map made without an agent session. Unattended mode never writes outside the map folder.
 if (agent === 'codex') report.push('AGENT  Codex: questions on the map run through Codex');
+if (agent === 'qwen') report.push('AGENT  Qwen Code: questions on the map run through Qwen Code');
 if (agent === 'none') report.push("AGENT  none: made without an agent session, so the map's prompts don't name one");
+const NOTE_LABEL = agent === 'qwen' ? 'QWEN.LOCAL.MD' : 'CLAUDE.LOCAL.MD';
 let claudeNote = null;
 if (scan.blueprint) report.push('BLUEPRINT  planned, not built yet: drawn from floorplan/plan.json');
-else if (unattended) report.push(`CLAUDE.LOCAL.MD  ${claudeNote = 'left alone (unattended mode writes only inside the map folder)'}`);
-else if (agent === 'claude' && !args['no-claude-md']) report.push(`CLAUDE.LOCAL.MD  ${claudeNote = writeClaudeMd(root, outDir, { add: !!args['claude-md'] })}`);
+else if (unattended) report.push(`${NOTE_LABEL}  ${claudeNote = 'left alone (unattended mode writes only inside the map folder)'}`);
+else if (agent === 'claude' && !args['no-claude-md']) report.push(`${NOTE_LABEL}  ${claudeNote = writeClaudeMd(root, outDir, { add: !!args['claude-md'], agent })}`);
+else if (agent === 'qwen' && !args['no-qwen-md']) report.push(`${NOTE_LABEL}  ${claudeNote = writeClaudeMd(root, outDir, { add: !!args['qwen-md'], agent })}`);
 report.push(trackedWarning ? `GIT  ! ${trackedWarning}` : 'GIT  floorplan/ is kept out of git (it ignores itself)');
 report.push('');
 report.push(`✓ wrote ${path.relative(root, path.join(outDir, 'index.html'))} (${fmtNum(Math.round(html.length / 1024))} KB) and graph.json`);

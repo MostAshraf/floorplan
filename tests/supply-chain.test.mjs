@@ -46,6 +46,8 @@ test('the plugin is only a skill: no hooks, MCP servers or commands that run on 
   assert.deepEqual(Object.keys(json('.claude-plugin/plugin.json')).sort(), ['author', 'description', 'documentationUrl', 'homepage', 'keywords', 'license', 'name', 'privacyPolicyUrl', 'repository', 'supportUrl', 'version'], `Claude Code manifest: nothing beyond the skill. ${UPDATE}`);
   assert.deepEqual(Object.keys(json('.codex-plugin/plugin.json')).sort(), ['author', 'description', 'homepage', 'interface', 'keywords', 'license', 'name', 'repository', 'requires_local_executor', 'skills', 'version'], `Codex manifest: nothing beyond the skill. ${UPDATE}`);
   assert.equal(json('.codex-plugin/plugin.json').skills, './skills/');
+  // the Qwen Code manifest is what makes this repo a native Qwen extension; it declares no behaviour of its own
+  assert.deepEqual(Object.keys(json('qwen-extension.json')).sort(), ['author', 'description', 'homepage', 'license', 'name', 'repository', 'version'], `Qwen Code manifest: nothing beyond the skill. ${UPDATE}`);
   // both marketplaces install from this repo itself, never from somewhere else
   assert.deepEqual(json('.claude-plugin/marketplace.json').plugins.map((p) => p.source), ['./']);
   for (const p of json('.agents/plugins/marketplace.json').plugins) assert.equal(typeof p.source === 'string' ? p.source : p.source?.path, './', `Codex marketplace source. ${UPDATE}`);
