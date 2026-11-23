@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { lib, shopApp, run, readGraph, readJson, cleanup } from './helpers.mjs';
 
 const { detectAgent, cliLabel } = await lib('agent.mjs');
@@ -117,6 +118,35 @@ test('an existing QWEN.local.md note is kept current, and the opt-out marker sti
     fs.writeFileSync(notes, 'my notes\n<!-- floorplan:off -->\n');
     assert.match(run('build.mjs', root, '--agent', 'qwen', '--qwen-md'), /QWEN\.LOCAL\.MD {2}skipped \(opted out\)/);
     assert.equal(fs.readFileSync(notes, 'utf8'), 'my notes\n<!-- floorplan:off -->\n');
+  } finally { cleanup(root); }
+});
+
+test('the Qwen notes file is excluded from git by an exact, forward-slash line', () => {
+  // gitignore reads a backslash as an escape, so a Windows path separator in this line would leave the
+  // notes file trackable there: the line is checked character for character.
+  const root = shopApp();
+  execFileSync('git', ['init', '-q', root]);
+  try {
+    run('scan.mjs', root);
+    assert.match(run('build.mjs', root, '--agent', 'qwen', '--qwen-md'), /ignored locally via \.git\/info\/exclude/);
+    const exclude = fs.readFileSync(path.join(root, '.git', 'info', 'exclude'), 'utf8');
+    assert.ok(exclude.split(/\r?\n/).includes('/.qwen/QWEN.local.md'), `expected the line /.qwen/QWEN.local.md in .git/info/exclude, got:\n${exclude}`);
+  } finally { cleanup(root); }
+});
+
+test("a Qwen Code build leaves Claude Code's files alone, even an old block in CLAUDE.md; a Claude Code build still moves it out", () => {
+  const root = shopApp();
+  const old = '# Team notes\n\n<!-- floorplan:start -->\nold\n<!-- floorplan:end -->\n';
+  try {
+    run('scan.mjs', root);
+    fs.writeFileSync(path.join(root, 'CLAUDE.md'), old);
+    run('build.mjs', root, '--agent', 'qwen', '--qwen-md');
+    assert.equal(fs.readFileSync(path.join(root, 'CLAUDE.md'), 'utf8'), old, 'a Qwen Code build never rewrites CLAUDE.md');
+    assert.match(fs.readFileSync(path.join(root, '.qwen', 'QWEN.local.md'), 'utf8'), /floorplan\/query\.mjs/);
+    assert.match(run('build.mjs', root, '--agent', 'claude', '--claude-md'), /moved the Floorplan section out of CLAUDE\.md/);
+    const after = fs.readFileSync(path.join(root, 'CLAUDE.md'), 'utf8');
+    assert.doesNotMatch(after, /floorplan:start/);
+    assert.match(after, /^# Team notes/);
   } finally { cleanup(root); }
 });
 

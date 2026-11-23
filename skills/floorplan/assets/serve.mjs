@@ -11,7 +11,7 @@
 // The server listens on 127.0.0.1 only. Each question runs in the codebase root, on your own account:
 // `claude -p` with read-only tools (Read, Grep, Glob, and Bash limited to floorplan/query.mjs),
 // `codex exec` in its read-only sandbox, or `qwen -p` with reads and the same query.mjs command allowed
-// and everything else left to ask. It uses the one that built the map, else whichever is installed.
+// and everything else left to be denied rather than asked. It uses the one that built the map, else whichever is installed.
 // When the map is rebuilt, open tabs reload in place. The running server is recorded in .cache/server.json.
 import http from 'node:http';
 import fs from 'node:fs';
@@ -368,12 +368,16 @@ function claudeRun(body, mode) {
     },
   };
 }
+// Qwen has no path-scoped --disallowedTools like Claude Code's, so the map's own generated files are kept out
+// of its context by instruction: floorplan/index.html inlines the layout engine and fonts (about 2 MB on one
+// line), and reading it can push a single question past the context limit.
+const QWEN_KEEP_OUT = '\n\nDo not read floorplan/index.html, floorplan/serve.mjs, floorplan/page-safety.mjs or anything under floorplan/.cache/: they are the map\'s own generated files, not the codebase, and some are too large to read. Use floorplan/query.mjs for anything about the map, and the source files for the code.';
 // Qwen Code: `qwen -p` with reads and the map's query command allowed, answering in the schema; follow-ups
 // resume its session. Its stream-json events are shaped like Claude Code's, with the validated answer in the
 // result event's structured_result.
 function qwenRun(body, mode) {
   const args = [...cli.args, '-p', '--output-format', 'stream-json',
-    '--json-schema', JSON.stringify(mode.schema), '--append-system-prompt', mode.instructions,
+    '--json-schema', JSON.stringify(mode.schema), '--append-system-prompt', mode.instructions + QWEN_KEEP_OUT,
     // No MCP servers: answers only read files and query the map, and the person's own servers would
     // otherwise load every tool's description into each question. The empty config is one argument,
     // so no shell quoting. (Qwen has no --strict-mcp-config; this replaces the config-file servers.)
@@ -381,8 +385,10 @@ function qwenRun(body, mode) {
     // Anything not allowed here is denied rather than asked (there is no one to ask): the agent reads
     // files and queries the map, and cannot edit anything.
     '--approval-mode', 'default'];
-  // an array flag: one --allowed-tools per rule, so none needs a shell to parse it
-  for (const rule of ['Bash(node floorplan/query.mjs *)', 'Read']) args.push('--allowed-tools', rule);
+  // an array flag: one --allowed-tools per rule, so none needs a shell to parse it. Qwen Code matches its own
+  // tool names only (verified against 0.28.3): a Claude-style `Bash(...)` rule matches nothing, and a `-p` run
+  // leaves the shell tool out entirely unless a rule allows it, so the map could never be queried that way.
+  for (const rule of ['run_shell_command(node floorplan/query.mjs *)', 'read_file']) args.push('--allowed-tools', rule);
   if (body.session) args.push('--resume', String(body.session));
   if (model) args.push('--model', model);
   return {

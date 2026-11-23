@@ -12,10 +12,12 @@ import { git } from './common.mjs';
 
 const START = '<!-- floorplan:start -->';
 const END = '<!-- floorplan:end -->';
-// each agent's personal, uncommitted project notes, loaded at session start
+// each agent's personal, uncommitted project notes, loaded at session start. A forward slash on purpose:
+// the name is pasted into .git/info/exclude verbatim, and gitignore reads a backslash as an escape, so
+// path.join here would write a pattern that never matches on Windows.
 const NOTES = {
   claude: { file: 'CLAUDE.local.md' },
-  qwen: { file: path.join('.qwen', 'QWEN.local.md') },
+  qwen: { file: '.qwen/QWEN.local.md' },
 };
 
 function block(rel) {
@@ -59,7 +61,7 @@ function excludeLocally(root, name) {
   return 'ignored locally via .git/info/exclude';
 }
 
-/** Refreshes the block, or adds it when `add` (the user asked for it); moves it out of a committed CLAUDE.md written by older versions. */
+/** Refreshes the block, or adds it when `add` (the user asked for it); a Claude Code build also moves it out of a committed CLAUDE.md written by older versions. */
 export function writeClaudeMd(root, outDir, { add = false, agent = 'claude' } = {}) {
   const kind = NOTES[agent];
   if (!kind) return 'skipped (this agent has no personal notes file)';
@@ -72,8 +74,9 @@ export function writeClaudeMd(root, outDir, { add = false, agent = 'claude' } = 
   if (!add && !had) return `not added (offer it to the user; add it with --${agent}-md)`;
   const notes = [];
 
-  // older versions wrote the block into CLAUDE.md, which is usually committed: take it back out
-  for (const f of [path.join(root, 'CLAUDE.md'), path.join(root, '.claude', 'CLAUDE.md')]) {
+  // older versions wrote the block into CLAUDE.md, which is usually committed: take it back out.
+  // Only a Claude Code build touches Claude Code's files; another agent's build leaves them alone.
+  if (agent === 'claude') for (const f of [path.join(root, 'CLAUDE.md'), path.join(root, '.claude', 'CLAUDE.md')]) {
     const t = read(f);
     const rest = t == null ? null : stripBlock(t);
     if (rest == null) continue;

@@ -121,12 +121,15 @@ test('with only Qwen Code installed, questions run through it, with reads and th
   const [call] = s.calls();
   assert.ok(call.args.includes('-p'));
   assert.ok(call.args.includes('stream-json'));
-  // an array flag: one --allowed-tools per rule, the map's query command and reads, nothing wider
-  assert.deepEqual(call.args.flatMap((a, i) => (a === '--allowed-tools' ? [call.args[i + 1]] : [])), ['Bash(node floorplan/query.mjs *)', 'Read']);
+  // an array flag: one --allowed-tools per rule, the map's query command and reads, nothing wider, in Qwen's
+  // own tool names: a Claude-style Bash(...) rule matches nothing there and leaves the shell tool out
+  assert.deepEqual(call.args.flatMap((a, i) => (a === '--allowed-tools' ? [call.args[i + 1]] : [])), ['run_shell_command(node floorplan/query.mjs *)', 'read_file']);
   assert.equal(call.args[call.args.indexOf('--approval-mode') + 1], 'default');
   // none of the person's MCP servers: the empty config arrives as one argument, exactly, on every platform
   assert.equal(call.args[call.args.indexOf('--mcp-config') + 1], '{"mcpServers":{}}');
   assert.ok(JSON.parse(call.args[call.args.indexOf('--json-schema') + 1]).properties.title, 'the answer schema arrives on the command line');
+  // Qwen has no path-scoped disallow, so the map's own generated files are kept out of its context by instruction
+  assert.match(call.args[call.args.indexOf('--append-system-prompt') + 1], /Do not read floorplan\/index\.html/);
   assert.equal(call.input, 'How do refunds work?');
 });
 
