@@ -9,12 +9,12 @@
 
 **See how your app actually fits together.**
 
-Claude or Codex reads your codebase and draws an interactive map of it. Every part, file and web request gets a plain-English name, and every connection between them is shown.
+Claude, Codex or Qwen reads your codebase and draws an interactive map of it. Every part, file and web request gets a plain-English name, and every connection between them is shown.
 
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-D97757?style=flat-square)](https://code.claude.com/docs/en/overview)
 [![Codex plugin](https://img.shields.io/badge/Codex-plugin-111?style=flat-square)](docs/codex.md)
 [![Tests](https://img.shields.io/github/actions/workflow/status/haydenschmitty/floorplan/test.yml?branch=main&style=flat-square&label=tests)](https://github.com/haydenschmitty/floorplan/actions/workflows/test.yml)
-[![Version](https://img.shields.io/badge/version-0.11.0-111?style=flat-square)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.12.0-111?style=flat-square)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-111?style=flat-square)](LICENSE)
 [![Node 18+](https://img.shields.io/badge/node-%E2%89%A518-111?style=flat-square)](https://nodejs.org)
 [![Zero dependencies](https://img.shields.io/badge/dependencies-0-111?style=flat-square)](#how-it-works)
@@ -35,11 +35,11 @@ Claude or Codex reads your codebase and draws an interactive map of it. Every pa
 
 You built an app, probably with a lot of help from AI, and it works. But ask "what happens when someone checks out?" or "what breaks if I change this?" and the honest answer is *no idea*.
 
-Floorplan gives you the diagram nobody drew. Ask Claude Code or Codex for a floorplan and a few minutes later you have a map you can explore, ask questions on, and keep up to date as you work.
+Floorplan gives you the diagram nobody drew. Ask Claude Code, Codex or Qwen Code for a floorplan and a few minutes later you have a map you can explore, ask questions on, and keep up to date as you work.
 
 - **For builders:** understand the app you made, in your own words, without reading the code.
 - **For teams:** onboard someone in minutes, from the big picture down to the exact file.
-- **For working with AI:** after every change Claude or Codex makes, see exactly which parts it touched and why.
+- **For working with AI:** after every change Claude, Codex or Qwen makes, see exactly which parts it touched and why.
 
 ## Floorplan, Archify or Understand Anything?
 
@@ -126,7 +126,7 @@ Floorplan is made for mapping code you already have. It can also start from a PR
 
 ## See it in action
 
-Want to click around yourself? Open the [live demo](https://haydenschmitty.github.io/floorplan-demo/): the real Brewline map beside a scripted conversation, in Claude Code or Codex.
+Want to click around yourself? Open the [live demo](https://haydenschmitty.github.io/floorplan-demo/): the real Brewline map beside a scripted conversation, in Claude Code, Codex or Qwen Code.
 
 <table>
 <tr>
@@ -163,7 +163,7 @@ Want to click around yourself? Open the [live demo](https://haydenschmitty.githu
 
 ## Install
 
-You need [Node.js 18+](https://nodejs.org) and either Claude Code or Codex. Floorplan runs on the plan you already have, with no API keys.
+You need [Node.js 18+](https://nodejs.org) and one of Claude Code, Codex or Qwen Code. Floorplan runs on the plan you already have, with no API keys.
 
 ### Claude Code
 
@@ -193,9 +193,21 @@ codex plugin add floorplan@floorplan
 
 Start a new chat and ask for a floorplan, or type `$floorplan`. The map's Ask bar runs on your own Codex sign-in, with no API key. More in [Floorplan in Codex](docs/codex.md).
 
+### Qwen Code
+
+From a terminal. Qwen Code installs this repo natively, from its own `qwen-extension.json`:
+
+```bash
+qwen extensions install <owner>/floorplan
+```
+
+A private repository needs a token in the installer's environment first: `export GITHUB_TOKEN="$(gh auth token)"` (Qwen Code reads `GITHUB_TOKEN`, not `gh`'s stored login). For a local checkout, `qwen extensions link <path>` runs it straight from the folder.
+
+Start a new session and ask for a floorplan; the skill is listed as `floorplan:floorplan` (also `/floorplan:floorplan`). The map's Ask bar runs through the Qwen Code CLI on your own sign-in, with no API key: the server finds `qwen` on PATH, or the entry point your running session names. More in [Getting started](docs/getting-started.md).
+
 ## Quick start
 
-1. Open your project in Claude Code or Codex. For a frontend and backend in separate repos, open the folder that holds both.
+1. Open your project in Claude Code, Codex or Qwen Code. For a frontend and backend in separate repos, open the folder that holds both.
 2. Ask:
    > Make me a floorplan of this app.
 
@@ -216,7 +228,7 @@ You get a [blueprint](#also-blueprints-for-apps-you-havent-built-yet) of the pla
 
 ### Things to try
 
-| Ask Claude Code or Codex | Ask the map |
+| Ask Claude Code, Codex or Qwen Code | Ask the map |
 |---|---|
 | "Make me a floorplan of this app" | "What happens when someone places an order?" |
 | "Update the floorplan" | "Where do we talk to Stripe?" |
@@ -230,13 +242,13 @@ You get a [blueprint](#also-blueprints-for-apps-you-havent-built-yet) of the pla
 ```mermaid
 flowchart LR
     code["Your codebase<br/>one repo or several"] --> scan["Scan<br/>files, imports, routes, requests"]
-    scan --> agent["Claude or Codex<br/>names the parts, describes every file"]
+    scan --> agent["Claude, Codex or Qwen<br/>names the parts, describes every file"]
     agent --> build["Build<br/>map, health, screens, recent work"]
     build --> map["floorplan/index.html<br/>opens in your browser"]
     map -. "update the floorplan" .-> scan
 ```
 
-Scripts do the mechanical work: finding repos, parsing code in a dozen languages, matching web requests to endpoints, laying out the map. They're plain Node with no dependencies. Claude or Codex does the part only a reader can: deciding what the parts of your app *are*, and saying so plainly. Details in [How it works](docs/how-it-works.md).
+Scripts do the mechanical work: finding repos, parsing code in a dozen languages, matching web requests to endpoints, laying out the map. They're plain Node with no dependencies. Claude, Codex or Qwen does the part only a reader can: deciding what the parts of your app *are*, and saying so plainly. Details in [How it works](docs/how-it-works.md).
 
 **Languages:** TypeScript, JavaScript, Python, Go, Rust, Java, Kotlin, Scala, Swift, C#, PHP, plus Vue, Svelte and Astro files and Shopify themes (Liquid), with lighter support for others.<br>
 **Endpoints:** Express, Fastify, Koa, Hono, NestJS, Next.js, Firebase Cloud Functions, Supabase Edge Functions, Flask, FastAPI, Django, Go's net/http, Gin, Echo and chi, Actix, Axum, Spring, ASP.NET Core, Laravel (with Wayfinder calls), Serverless Framework (`serverless.yml`), `Bun.serve` routes, and route tables keyed by method and path (`"GET /api/orders": listOrders`) in JavaScript and Python, or listed as `{ method, path, handle }` in JavaScript.<br>
@@ -244,7 +256,7 @@ Scripts do the mechanical work: finding repos, parsing code in a dozen languages
 
 ## What it adds to your project
 
-A `floorplan/` folder holding the map. In Claude Code, if you say yes, it also adds a short section to `CLAUDE.local.md` so future sessions know the map is there. **Neither is committed:** the folder ignores itself in git, and `CLAUDE.local.md` goes in your clone's private ignore list. In Codex, only the `floorplan/` folder is added. Your `.gitignore` and other tracked files are never touched. See [What's in your project](docs/project-files.md).
+A `floorplan/` folder holding the map. In Claude Code, if you say yes, it also adds a short section to `CLAUDE.local.md`; in Qwen Code, the same offer adds it to `.qwen/QWEN.local.md`. Either way, future sessions know the map is there. **Neither is committed:** the folder ignores itself in git, and the notes file goes in your clone's private ignore list. In Codex, only the `floorplan/` folder is added. Your `.gitignore` and other tracked files are never touched. See [What's in your project](docs/project-files.md).
 
 ## Privacy
 

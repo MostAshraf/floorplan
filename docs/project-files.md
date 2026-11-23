@@ -1,6 +1,6 @@
 # What's in your project
 
-Floorplan writes to exactly two places in your project: the `floorplan/` folder, and (in Claude Code, only if you say yes) a short section in `CLAUDE.local.md`. Neither is committed to git, and nothing else in your project is touched. Run in [unattended mode](unattended.md) (from CI or your own scripts), it writes only the `floorplan/` folder.
+Floorplan writes to exactly two places in your project: the `floorplan/` folder, and (in Claude Code only if you say yes) a short section in `CLAUDE.local.md` — in Qwen Code, the same section in `.qwen/QWEN.local.md`. Neither is committed to git, and nothing else in your project is touched. Run in [unattended mode](unattended.md) (from CI or your own scripts), it writes only the `floorplan/` folder.
 
 ## The `floorplan/` folder
 
@@ -50,10 +50,14 @@ A blueprint adds no section, since there's no code to look up yet. Claude offers
 
 In Codex this file isn't touched. Codex has no personal, uncommitted notes file (`AGENTS.md` is shared with your team), so Floorplan doesn't add a note there.
 
+## `.qwen/QWEN.local.md`
+
+In Qwen Code, the same offer writes the same section to `.qwen/QWEN.local.md`, Qwen Code's file for personal project notes, loaded at the end of every session's start (after the shared `QWEN.md`). It's created only if you say yes, only its own marked section is rewritten, and it's added to `.git/info/exclude` like `CLAUDE.local.md`. To remove it, delete the section, or put `<!-- floorplan:off -->` anywhere in the file. A map built by Claude Code never touches this file, and a map built by Qwen Code never touches `CLAUDE.local.md`.
+
 ## Staying out of git
 
 - **`floorplan/`** contains its own `.gitignore` that ignores everything in the folder, including itself. Your `.gitignore` isn't changed, and the folder never appears in `git status`.
-- **`CLAUDE.local.md`** is listed in `.git/info/exclude`, the per-clone ignore list that is never committed. If your project already ignores it, nothing is added.
+- **`CLAUDE.local.md`** and **`.qwen/QWEN.local.md`** are listed in `.git/info/exclude`, the per-clone ignore list that is never committed. If your project already ignores them, nothing is added.
 
 The map is personal to each clone. Teammates who install Floorplan make their own.
 

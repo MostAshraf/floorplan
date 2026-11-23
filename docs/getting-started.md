@@ -27,9 +27,17 @@ The first command adds this repository as a plugin source. The second installs F
 
 > In the Claude desktop app you can also browse plugins with the **+** button next to the prompt box (**Add plugins**, or **Plugins → Browse plugins**). It lists plugins from marketplaces you've already added.
 
+**In Qwen Code**, run this once, in any terminal (it needs Qwen Code 0.28+; the repo installs natively from its `qwen-extension.json`):
+
+```bash
+qwen extensions install <owner>/floorplan
+```
+
+Then start a new session; the skill is listed as `floorplan:floorplan` and also reachable as `/floorplan:floorplan`.
+
 ## Make your first map
 
-1. **Open your project.** In the Claude desktop app's Code tab, choose your project's folder in the row under the prompt box before sending your first message. In the Codex app, open the project's folder. In a terminal, run `claude` or `codex` from the project folder.
+1. **Open your project.** In the Claude desktop app's Code tab, choose your project's folder in the row under the prompt box before sending your first message. In the Codex app, open the project's folder. In a terminal, run `claude`, `codex` or `qwen` from the project folder.
 
    If your app is split across several repos (say `web/` and `api/` side by side), open the folder that contains them all. Floorplan maps them together and connects the requests between them.
 
@@ -37,11 +45,11 @@ The first command adds this repository as a plugin source. The second installs F
 
    > Make me a floorplan of this app.
 
-   In Claude Code you can also pick **floorplan** from the **/** menu, or type `/floorplan:floorplan`. In Codex, type `$floorplan`.
+   In Claude Code you can also pick **floorplan** from the **/** menu, or type `/floorplan:floorplan`. In Codex, type `$floorplan`. In Qwen Code, type `/floorplan:floorplan`.
 
 3. **Let it work.** This is what happens:
    - A scan lists every file, import, endpoint and web request. This takes seconds and costs no tokens.
-   - Claude or Codex reads your READMEs, setup files and entry points, then decides the main parts of your app and what each one is for.
+   - Claude, Codex or Qwen reads your READMEs, setup files and entry points, then decides the main parts of your app and what each one is for.
    - It writes a plain-English name and a one-line description for every file and endpoint. In Claude Code, projects with more than about 150 files are split across parallel helpers.
    - The map is built and checked: connections, Health issues and screens.
 
@@ -65,14 +73,14 @@ Everything above is about Floorplan's main job: mapping code that already exists
 
 > Here's my PRD. Make me a floorplan of what we'd need to build.
 
-You get a **blueprint**: the same map, with every part, file, endpoint and screen the app would need, how they connect, and the outside services they rely on. Its cards have dashed outlines so you can tell it's a plan. The reply names the stack Claude or Codex chose, what it assumed, and the questions your PRD leaves open.
+You get a **blueprint**: the same map, with every part, file, endpoint and screen the app would need, how they connect, and the outside services they rely on. Its cards have dashed outlines so you can tell it's a plan. The reply names the stack Claude, Codex or Qwen chose, what it assumed, and the questions your PRD leaves open.
 
 On the map:
 - **Review** lists what the plan still has to decide, like endpoints anyone could use or open questions. **Resolve on the map** settles one: for a question, you just type your answer.
 - Switch the Ask bar to **Change** to shape the plan ("also plan out refunds"). The map redraws with what changed highlighted, and **Undo** puts it back.
-- Each part has **Build this with Claude** (or Codex), a ready request to build just that part.
+- Each part has **Build this with Claude** (or Codex, or Qwen), a ready request to build just that part.
 
-Once the code exists, ask Claude or Codex to "map the real code now", and the blueprint becomes a normal map. See [Blueprints](how-it-works.md#blueprints) for how it works.
+Once the code exists, ask Claude, Codex or Qwen to "map the real code now", and the blueprint becomes a normal map. See [Blueprints](how-it-works.md#blueprints) for how it works.
 
 ## Open the map yourself
 
@@ -102,10 +110,14 @@ claude plugin update floorplan@floorplan
 
 Or turn on automatic updates: in a Claude Code session, run `/plugin`, open **Marketplaces**, and choose **Enable auto-update**. Either way, updates apply in your next session. See the [changelog](../CHANGELOG.md) for what changed.
 
+In Qwen Code, `qwen extensions update floorplan` brings the latest version (installed extensions also offer to update when their source moves).
+
 ## Remove it
 
 ```bash
 claude plugin uninstall floorplan@floorplan
 ```
 
-In Codex, see [Update or remove it](codex.md#update-or-remove-it). Then delete the `floorplan/` folder (and, if you used Claude Code, the Floorplan section of `CLAUDE.local.md`) from any project you used it in.
+In Qwen Code: `qwen extensions uninstall floorplan`.
+
+In Codex, see [Update or remove it](codex.md#update-or-remove-it). Then delete the `floorplan/` folder (and, if you used Claude Code, the Floorplan section of `CLAUDE.local.md`; if you used Qwen Code, the section of `.qwen/QWEN.local.md`) from any project you used it in.

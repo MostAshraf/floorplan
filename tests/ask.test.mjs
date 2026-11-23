@@ -106,6 +106,40 @@ test('a signed-out Codex says so, so the map can tell the person to sign in', as
   assert.equal(pick(await ask(s, 'SIGNED-OUT again'), 'answer').length, 0);
 });
 
+test('with only Qwen Code installed, questions run through it, with reads and the query command allowed', async () => {
+  const s = await serve({ FLOORPLAN_CLAUDE: path.join(root, 'no-such-cli'), FLOORPLAN_CODEX: path.join(root, 'no-such-cli'), FLOORPLAN_QWEN: path.join(FAKE, 'fake-qwen.mjs') });
+  assert.equal(s.page.engine, 'qwen');
+  assert.equal(s.page.cli, true);
+
+  const events = await ask(s, 'How do refunds work?');
+  assert.deepEqual(pick(events, 'progress').map((p) => p.text), ['Reading the map overview', 'Reading shop-api/routes/orders.js']);
+  const [answer] = pick(events, 'answer');
+  assert.equal(answer.title, 'Refunds');
+  assert.deepEqual(answer.items.map((i) => i.id), ['f:shop-api/routes/orders.js']);
+  assert.equal(answer.session, 'test-session');
+
+  const [call] = s.calls();
+  assert.ok(call.args.includes('-p'));
+  assert.ok(call.args.includes('stream-json'));
+  // an array flag: one --allowed-tools per rule, the map's query command and reads, nothing wider
+  assert.deepEqual(call.args.flatMap((a, i) => (a === '--allowed-tools' ? [call.args[i + 1]] : [])), ['Bash(node floorplan/query.mjs *)', 'Read']);
+  assert.equal(call.args[call.args.indexOf('--approval-mode') + 1], 'default');
+  // none of the person's MCP servers: the empty config arrives as one argument, exactly, on every platform
+  assert.equal(call.args[call.args.indexOf('--mcp-config') + 1], '{"mcpServers":{}}');
+  assert.ok(JSON.parse(call.args[call.args.indexOf('--json-schema') + 1]).properties.title, 'the answer schema arrives on the command line');
+  assert.equal(call.input, 'How do refunds work?');
+});
+
+test('a Qwen Code follow-up resumes its session, and a signed-out one says so', async () => {
+  const s = await serve({ FLOORPLAN_CLAUDE: path.join(root, 'no-such-cli'), FLOORPLAN_CODEX: path.join(root, 'no-such-cli'), FLOORPLAN_QWEN: path.join(FAKE, 'fake-qwen.mjs') });
+  const [first] = pick(await ask(s, 'How do refunds work?'), 'answer');
+  await ask(s, 'And then?', first.session);
+  const [, second] = s.calls();
+  assert.equal(second.args[second.args.indexOf('--resume') + 1], 'test-session');
+  const [failure] = pick(await ask(s, 'SIGNED-OUT question'), 'failure');
+  assert.equal(failure.code, 'not_logged_in');
+});
+
 test('the Claude Code CLI comes first for a map Claude built, with read-only tools, and follow-ups resume', async () => {
   const s = await serve({ FLOORPLAN_CLAUDE: path.join(FAKE, 'fake-claude.mjs'), FLOORPLAN_CODEX: path.join(FAKE, 'fake-codex.mjs') });
   assert.equal(s.page.engine, 'claude');

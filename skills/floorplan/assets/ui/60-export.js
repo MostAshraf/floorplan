@@ -1,6 +1,6 @@
-// Export: a copy of the map to share as one HTML file, for people without Claude or Codex. The map's server
-// (serve.mjs) builds it: the same page without the Ask bar, requests for Claude or Codex, or links into this
-// computer, plus the extras ticked here. Talks to the viewer only through window.Floorplan.
+// Export: a copy of the map to share as one HTML file, for people without Claude, Codex or Qwen Code. The
+// map's server (serve.mjs) builds it: the same page without the Ask bar, requests for the agents, or links
+// into this computer, plus the extras ticked here. Talks to the viewer only through window.Floorplan.
 (() => {
   const SC = window.Floorplan;
   if (!SC || SC.exported) return;
@@ -56,7 +56,7 @@
       SC.toast(`Downloaded ${name}`);
     } catch (e) {
       err.hidden = false;
-      err.textContent = e.message === 'Failed to fetch' ? 'Couldn’t reach the map’s server. Ask Claude or Codex to open the floorplan again, then try again.' : e.message;
+      err.textContent = e.message === 'Failed to fetch' ? 'Couldn’t reach the map’s server. Ask Claude, Codex or Qwen Code to open the floorplan again, then try again.' : e.message;
     }
   }
 
@@ -64,7 +64,7 @@
     if (!S) {
       SC.modal({
         title: 'Export a copy',
-        html: `<p>Exporting needs the map’s server. Ask Claude or Codex to “export the floorplan”, or run this in the project folder:</p><pre>${h(CMD)}</pre>`,
+        html: `<p>Exporting needs the map’s server. Ask Claude, Codex or Qwen Code to “export the floorplan”, or run this in the project folder:</p><pre>${h(CMD)}</pre>`,
         actions: [{ label: 'Copy command', primary: true, icon: 'copy', onClick: () => { SC.copy(CMD).then((ok) => { if (ok) SC.toast('Copied'); }); } }],
       });
       return;

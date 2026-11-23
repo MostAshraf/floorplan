@@ -110,7 +110,7 @@ Everything above is how Floorplan maps existing code, its main job. A blueprint 
 
 - cards have dashed outlines and the board a **Blueprint** label;
 - Health becomes a **design review** of the plan: endpoints anyone could use to change data, endpoints with no decision on who may use them, open questions, and pieces nothing connects to;
-- every part has **Build this with Claude** (or Codex): a request to build that part as planned, listing its files, endpoints and what it relies on;
+- every part has **Build this with Claude** (or Codex, or Qwen): a request to build that part as planned, listing its files, endpoints and what it relies on;
 - Ask answers from the plan and the PRD, since there's no code to read;
 - the Ask bar's **Change** switch takes requests like "also plan out refunds": the agent returns the updated plan, the map's server checks it with `plan.mjs` and `build.mjs` (sending problems back once), saves it and redraws the map with the changes highlighted, and **Undo** puts the previous plan back. Each design review item's **Resolve on the map** fills in that request for you: an open question just needs your answer. The agent stays read-only: only the server writes, and only `plan.json`, `architecture.json` and `recent-work.json`.
 

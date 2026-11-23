@@ -58,7 +58,7 @@ claude plugin install floorplan@floorplan
 
 A plugin installed from a local folder runs straight from it, so edits apply in the next session with no update step.
 
-To try it in Codex, see [Trying a working copy](codex.md#trying-a-working-copy). Codex copies a local plugin when you add it, so run `codex plugin add floorplan@floorplan` again after each change. `--agent claude|codex|none` on build.mjs (or `FLOORPLAN_AGENT`) and `--engine claude|codex` on serve.mjs let you try either agent's map from anywhere.
+To try it in Codex, see [Trying a working copy](codex.md#trying-a-working-copy). Codex copies a local plugin when you add it, so run `codex plugin add floorplan@floorplan` again after each change. In Qwen Code, link your working copy (`qwen extensions link /path/to/floorplan`); a linked extension runs straight from the folder, so edits apply in the next session. `--agent claude|codex|qwen|none` on build.mjs (or `FLOORPLAN_AGENT`) and `--engine claude|codex|qwen` on serve.mjs let you try any agent's map from anywhere.
 
 The scripts also run on their own, which is the fastest way to work on them:
 

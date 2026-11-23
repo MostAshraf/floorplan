@@ -36,6 +36,12 @@ test('the Codex marketplace lists this plugin, from this repo', () => {
   assert.deepEqual(entry.source, { source: 'local', path: './' });
 });
 
+test('the Qwen Code extension manifest matches the plugin and points at the same skill', () => {
+  const qwen = readJson(path.join(REPO, 'qwen-extension.json'));
+  assert.equal(qwen.name, plugin.name);
+  assert.equal(qwen.version, plugin.version, 'qwen-extension.json version');
+});
+
 test('the README version badge matches plugin.json', () => {
   assert.match(read('README.md'), new RegExp(`badge/version-${plugin.version.replaceAll('.', '\\.')}-`));
 });
