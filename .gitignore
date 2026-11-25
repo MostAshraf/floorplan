@@ -2,6 +2,10 @@
 .claude/
 CLAUDE.local.md
 
+# Local Qwen Code settings and personal notes
+.qwen/
+QWEN.local.md
+
 # A floorplan made of this repo itself (root only: skills/floorplan/ is the plugin)
 /floorplan/
 
