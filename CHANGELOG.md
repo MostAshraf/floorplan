@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.12.1 (2026-11-27)
+
+- **A map that shows an outside service draws again.** A map with a database, a tool or an identity provider on it came up empty, with `Layout failed: org.eclipse.elk.core.UnsupportedConfigurationException: Node 'g.n:...' has its layer constraint set to LAST, but has at least one outgoing edge that does not go to a LAST_SEPARATE node.` where the graph should be. The viewer gave every outside service the layer constraint `LAST`, and the layout engine refuses that for any node with edges — which an outside service always has, since something in the app talks to it. Outside services now get a layer of their own (`LAST_SEPARATE`): the board draws, and they stand together in their own column on the right instead of being scattered through the graph.
+
 ## 0.12.0 (2026-11-23)
 
 - **Qwen Code is a first-class agent.** Floorplan now installs into Qwen Code natively (`qwen extensions install MostAshraf/floorplan`, or from any checkout: `qwen extensions install <path>`): the repo's root `qwen-extension.json` makes it a native Qwen extension instead of an auto-converted Claude plugin, so the skill loads as `floorplan:floorplan` with nothing re-packaged. The scripts notice they're running under Qwen Code (its `QWEN_CODE_SESSION_ID`/`QWEN_CODE` variables), so the map records it and its Ask bar and "Fix with"/"Build this with" prompts name Qwen rather than Claude. `--agent qwen` and `FLOORPLAN_AGENT=qwen` force it, as for the other agents.

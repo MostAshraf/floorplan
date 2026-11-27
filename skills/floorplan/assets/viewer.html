@@ -1101,7 +1101,7 @@ async function layout(view) {
   for (const item of view.visible) {
     const [w, hh] = SIZES[info(item).type] || SIZES.file;
     const ext = item.startsWith('n:') && nodes.get(item.slice(2)).kind === 'external';
-    children.push({ id: item, width: w, height: Math.max(hh + cardExtraH(item) + (answerNote(item) ? NOTE_H : 0), (deg.get(item) || 0) * 7 + 28), ...(ext ? { layoutOptions: { 'elk.layered.layering.layerConstraint': 'LAST' } } : {}) });
+    children.push({ id: item, width: w, height: Math.max(hh + cardExtraH(item) + (answerNote(item) ? NOTE_H : 0), (deg.get(item) || 0) * 7 + 28), ...(ext ? { layoutOptions: { 'elk.layered.layering.layerConstraint': 'LAST_SEPARATE' } } : {}) });
   }
   for (const c of view.connectors) {
     children.push({ id: c.id, width: clamp(textW(info(c.entity).name, 13) + 84, 150, 320), height: Math.max(42, (deg.get(c.id) || 0) * 7 + 14),
