@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.12.1 (2026-11-27)
 
 - **A map that shows an outside service draws again.** A map with a database, a tool or an identity provider on it came up empty, with `Layout failed: org.eclipse.elk.core.UnsupportedConfigurationException: Node 'g.n:...' has its layer constraint set to LAST, but has at least one outgoing edge that does not go to a LAST_SEPARATE node.` where the graph should be. The viewer gave every outside service the layer constraint `LAST`, and the layout engine refuses that for any node with edges — which an outside service always has, since something in the app talks to it. Outside services now get a layer of their own (`LAST_SEPARATE`): the board draws, and they stand together in their own column on the right instead of being scattered through the graph.
 
